@@ -1,0 +1,19 @@
+name: 'dbt_project'
+version: '1.0'
+config-version: 2
+
+profile: 'dbt_production_profile'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  dbt_project:
+    +materialized: view

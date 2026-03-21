@@ -1,0 +1,16 @@
+# dbt artifacts
+dbt_project/dbt_project/target/
+dbt_project/dbt_project/dbt_packages/
+dbt_project/dbt_project/logs/
+dbt_project/logs/
+dbt_project/.dbt/.user.yml
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# OS
+.DS_Store
