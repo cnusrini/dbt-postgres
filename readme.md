@@ -337,3 +337,18 @@ docker compose down -v
 - **Module 6** — Materializations & Incremental Strategy
 - **Module 7** — Jinja & Macro System
 - **Module 8** — Sources, Seeds & Snapshots
+
+---
+
+## Community & Discussion
+
+Join the Discord community to discuss dbt internals, ask questions, share progress, and collaborate with others learning and working with dbt:
+
+👉 **[Join the dbt Community Discord](https://discord.gg/Kg2R8qYH5)**
+
+Topics discussed:
+- dbt architecture and internals
+- Debugging and optimization
+- Project structure and best practices
+- PostgreSQL + dbt workflows
+- Module walkthroughs and labs
