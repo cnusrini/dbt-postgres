@@ -330,10 +330,61 @@ docker compose down -v
 
 ---
 
-## What's Next (Phase 2 — Core Modeling Engine)
+## Phase 2 — Core Modeling Engine
 
-- **Module 4** — dbt Project Structure & Compilation Model
-- **Module 5** — Dependency Graph & DAG Mechanics
+### Module 4 — dbt Project Structure & Compilation Model ✅
+
+| Lab | What was proved |
+|---|---|
+| Lab 1 — Node Discovery | File existence in `models/` = DAG membership. No file = no node. |
+| Lab 2 — Misplacement Test | Directory placement defines behavior, not file content. Macros in `models/` get treated as models. |
+| Lab 3 — Seed Materialization | Every CSV in `seeds/` becomes a physical database table via `dbt seed`. |
+| Lab 4 — Config Inheritance | Folder structure controls materialization. No config needed inside SQL files. |
+
+Folder structure established:
+```
+models/
+├── staging/       → materialized as view
+├── intermediate/  → materialized as view
+└── marts/         → materialized as table
+```
+
+---
+
+### Module 5 — Dependency Graph & DAG Mechanics ✅
+
+**Core concept:** `ref()` creates dependency edges between models. Edges build the DAG. The DAG determines execution order automatically.
+
+| Lab | What was proved |
+|---|---|
+| Lab 1 — Dependency Chain | Built `stg_orders → int_order_metrics → fct_sales`. dbt executed them in correct order automatically. |
+| Lab 2 — Inspecting the Graph | Used `dbt ls --select stg_orders+` (downstream) and `+fct_sales` (upstream) to traverse DAG edges. |
+| Lab 3 — Parallel Behavior | Independent models (`stg_orders`, `stg_customers`) ran concurrently. Dependent models waited their turn. |
+
+Models built:
+```
+staging/stg_orders.sql          → select 1 as order_id, 100 as amount
+staging/stg_customers.sql       → select 1 as customer_id, 'John' as customer_name
+intermediate/int_order_metrics  → adds tax calculation via ref('stg_orders')
+marts/fct_sales.sql             → final totals via ref('int_order_metrics')
+```
+
+Key DAG selection syntax:
+```bash
+# All nodes
+dbt ls --project-dir dbt_project
+
+# stg_orders and everything downstream
+dbt ls --select stg_orders+ --project-dir dbt_project
+
+# fct_sales and everything upstream
+dbt ls --select +fct_sales --project-dir dbt_project
+```
+
+---
+
+## What's Next
+
 - **Module 6** — Materializations & Incremental Strategy
 - **Module 7** — Jinja & Macro System
 - **Module 8** — Sources, Seeds & Snapshots
