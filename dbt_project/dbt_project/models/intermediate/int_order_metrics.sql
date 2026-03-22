@@ -1,5 +1,12 @@
 select
     order_id,
-    amount,
-    amount * 0.1 as tax
-from {{ ref('stg_orders') }}
+    revenue,
+    cost,
+    {{ add_margin('revenue', 'cost') }}
+from (
+    select
+        order_id,
+        amount as revenue,
+        amount * 0.6 as cost
+    from {{ ref('stg_orders') }}
+) base

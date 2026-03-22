@@ -383,11 +383,75 @@ dbt ls --select +fct_sales --project-dir dbt_project
 
 ---
 
+### Module 6 — Materializations & Incremental Strategy ✅
+
+**Core concept:** Materialization is an economic decision — not cosmetic. It defines how dbt physically stores model output.
+
+| Materialization | Storage | Rebuild Cost | Query Speed | Use Case |
+|---|---|---|---|---|
+| `view` | None | Low | Slow (runtime) | Staging |
+| `table` | Full | High | Fast | Marts |
+| `incremental` | Partial | Low after first run | Fast | Large facts |
+
+Modified `fct_sales.sql` to incremental — only new rows processed on each run:
+
+```sql
+{{ config(materialized='incremental') }}
+select order_id, amount, amount * 0.1 as tax, amount + (amount * 0.1) as total_amount
+from {{ ref('int_order_metrics') }}
+{% if is_incremental() %}
+where order_id > (select max(order_id) from {{ this }})
+{% endif %}
+```
+
+| Run | Data | Result |
+|---|---|---|
+| Run 1 | order_id = 1 | Full build `[INSERT 0 0]` |
+| Run 2 | No change | `[INSERT 0 0]` |
+| Run 3 | Added order_id = 2 | `[INSERT 0 1]` — only new row ✅ |
+
+Force full rebuild: `docker compose run --rm dbt run --full-refresh --project-dir dbt_project`
+
+---
+
+### Module 7 — Jinja & Macro System ✅
+
+**Core concept:** Two-phase system — Jinja compiles first, PostgreSQL executes second. PostgreSQL never sees Jinja.
+
+```
+Phase 1 — Compilation (Jinja + Python) → Plain SQL
+Phase 2 — Warehouse Execution (PostgreSQL)
+```
+
+**Lab 1 — Inspect Compilation Output**
+
+`int_debug.sql` uses `var()`, `ref()`, and target-aware `{% if %}` logic:
+- Dev target → `limit 5` included, `dev_schema`
+- Prod target → `limit 5` removed, `prod_schema`
+
+```bash
+docker compose run --rm dbt compile --project-dir dbt_project
+docker compose run --rm dbt compile --project-dir dbt_project --target prod
+```
+
+**Lab 2 — Reusable Metric Macro**
+
+`macros/metrics.sql` — change once, updates everywhere:
+```sql
+{% macro add_margin(revenue_col, cost_col) %}
+({{ revenue_col }} - {{ cost_col }}) / {{ revenue_col }} as margin
+{% endmacro %}
+```
+
+Called in models as `{{ add_margin('revenue', 'cost') }}` → compiles to pure SQL automatically.
+
+---
+
 ## What's Next
 
-- **Module 6** — Materializations & Incremental Strategy
-- **Module 7** — Jinja & Macro System
 - **Module 8** — Sources, Seeds & Snapshots
+- **Module 9** — Schema & Custom Testing
+- **Module 10** — Test Execution Strategy & CI Enforcement
 
 ---
 
